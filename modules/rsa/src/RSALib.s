@@ -22,7 +22,7 @@ gcd:
 gcd_loop:
 	# while (b != 0)
 	CMP r1, #0
-	BEW gcd_end
+	BEQ gcd_end
 	# r2 = a
 	MOV r2, r0
 	# r3 = b
@@ -106,7 +106,7 @@ cpubexp:
 # Parameters: e (in r0), phi (in r1)
 # Returns: d (in r0)
 cprivexp:
-	SUB sp, sp #8
+	SUB sp, sp, #8
 	STR lr, [sp, #0]
 	STR r4, [sp, #4]
 	
@@ -145,5 +145,5 @@ cprivexp:
 	LDR r4, [sp, #4]
 	LDR lr, [sp, #0]
 	ADD sp, sp, #8
-	MOV pc lr
+	MOV pc, lr
 

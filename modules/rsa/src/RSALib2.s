@@ -43,8 +43,7 @@ gcd_loop:
 	MOV r0, r2
 	B gcd_loop
 gcd_end:
-	LDR lr, [sp, #0]
-	ADD sp, sp, #4
+	LDR lr, [sp, #0] ADD sp, sp, #4
 	MOV pc, lr
 
 # Function: pow
