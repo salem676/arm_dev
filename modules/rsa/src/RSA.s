@@ -39,12 +39,14 @@ output_both_prime: .asciz "The number %d and %d are prime. \n"
  
 output_modulo: .asciz "The modulo (n) is: %d\n"
 output_totient: .asciz "The totient (phi(n)) is: %d\n"
+output_d: .asciz "The d value is : %d\n"
  
 input_number: .word 0
 p_value: .word 0
 q_value: .word 0
 modulo_value: .word 0
 totient_value: .word 0
+d_value: .word 0
  
 .text
 .align 2
@@ -71,6 +73,7 @@ p_prompt_loop:
     bl scanf
     ldr r2, =input_number 
     ldr r2, [r2]
+	mov r7, r2
  
 @ User Exit Selection if Zero 
     cmp r2, #0
@@ -149,7 +152,6 @@ valid_prime:
     beq q_valid_prime
  
 @ stores p in r7 for later, moves to q prompt, it set r6 to 1 so loop for p value isn't allowed 
-    mov r7, r2
     mov r6, #1
     b q_prompt_loop
  
@@ -237,10 +239,9 @@ modulo:
     bx lr
  
 totient:
-    SUB sp, sp, #12 
-    STR lr, [sp, #8]
-    STR r4, [sp, #4]
-    STR r5, [sp, #0]
+    SUB sp, sp, #8 
+    STR lr, [sp, #4]
+    STR r4, [sp, #0]
     ldr r4, =p_value
     ldr r0, [r4]
     sub r0, r0, #1
@@ -249,20 +250,18 @@ totient:
     sub r1, r1, #1
     mul r1, r0, r1
     ldr r0, =totient_value
-    str r5, [r0]
     ldr r0, =output_totient
+	mov r5, r1
     bl printf
-    LDR lr, [sp, #8]
-    LDR r4, [sp, #4]
-    LDR r5, [sp, #0]
-    ADD sp, sp, #12
+    LDR lr, [sp, #4]
+    LDR r4, [sp, #0]
+    ADD sp, sp, #8
     MOV pc, lr
 
 find_e:
     SUB sp, sp, #4
     STR lr, [sp]
 find_e_loop:
-    MOV r5, #84
     ldr r0, =prompte
     bl printf
     ldr r0, =format
@@ -291,6 +290,49 @@ find_e_success:
     ldr lr, [sp]
     add sp, sp, #4
     mov pc, lr
+cprivexp:
+	SUB sp, sp, #8
+	STR lr, [sp, #0]
+	STR r4, [sp, #4]
+	
+	# x is 1
+	MOV r7, #1
+	
+	find_x:
+	# r3 is x * phi
+	MUL r3, r7, r5
+	# r3 is 1 + x * phi
+	ADD r3, r3, #1
+
+	MOV r0, r3
+	# r1 is e
+	MOV r1, r4
+	# r0 is a%b
+	BL modulo2
+
+	# (1 + x* phi)%e == 0?
+	CMP r0, #0
+	BEQ found_d
+	
+	# x++
+	ADD r7, r7, #1
+	B find_x
+	
+	found_d:
+	
+	MOV r0, r3
+	MOV r1, r4
+	BL __aeabi_idiv
+
+	MOV r1, r0
+	LDR r0, =output_d
+	BL printf
+	LDR r1, =d_value
+	
+	LDR r4, [sp, #4]
+	LDR lr, [sp, #0]
+	ADD sp, sp, #8
+	MOV pc, lr
 main:
         SUB sp, sp, #4
         STR lr, [sp, #0]
@@ -299,6 +341,7 @@ main:
 		bl totient	
 
 		bl find_e
+		bl cprivexp
         LDR lr, [sp, #0]
         ADD sp, sp, #4
         MOV pc, lr
