@@ -6,12 +6,9 @@
 #
 
 .global gcd
-.global pow
 .global modulo
 .global cpubexp
 .global cprivexp
-.global encrypt
-.global decrypt
 
 .text
 
@@ -45,53 +42,6 @@ gcd_end:
 	ADD sp, sp, #4
 	MOV pc, lr
 
-# Function: pow
-# Calculates power of number using recursion
-# Parameters: m number in r0 and n power in r1
-# Returns: in r0 nth power of m
-pow:
-	# allocates space for lr and r4
-	SUB sp, sp, #12
-	# saves return address
-	STR lr, [sp, #0]	
-	# saves r4
-	STR r4, [sp, #4]
-	# copy m into r4
-	MOV r4, r0
-	# saves r5
-	STR r4, [sp, #0]
-	# copy n into r5
-	MOV r5, r1
-
-	CMP r5, #0
-	# if n!= 0, go to Else
-	BNE Else
-		# base case return value
-		MOV r1, #0
-		# call Return
-		B Return
-	Else:
-		# prepare argument n - 1
-		SUB r1, r5, #1
-		# recursive call pow(m, n-1)
-		BL pow
-		# multiply m (in r4) to result
-		MUL r1, r4, r1
-		# call Return
-		B Return
-	Return:
-	# restore return address
-	LDR lr, [sp, #0]
-	# restore r5
-	LDR r5, [sp, #8]
-	# restore r4
-	LDR r4, [sp, #4]
-	# restore stack
-	ADD sp, sp, #12
-	# return to caller
-	MOV pc, lr
-
-
 # Function: modulo
 # Calculates a%b
 # Parameters: r0 a and r1 b
@@ -111,57 +61,89 @@ modulo:
 	ADD sp, sp, #4
 	MOV pc, lr
 
-# Function: mod_pow
-# Caclulates
-# Parameters:
-# Returns:
-mod_pow:
-
-# Fuction: mod_inverse
-# Calculates
-# Parameters:
-# Returns:
-mod_inverse:
-
 # Function: cpubexp
-# Converts  hours and miles to kilometers per hour
-# Parameters: r0 hours and miles
-# Returns: prints kilometers per hour
+# Generates a valid candidate public exponent e
+# Parameters: r0 phi(n)
+# Returns: r0 valid e such that 1 < e < phi where gcd(e, phi) == 1
 cpubexp:
-
-# Function: cprivexp
-# 
-# Parameters:
-# Returns:
-cprivexp:
-
-# Function: cexp
-#
-# Parameters:
-# Returns:
-cexp:
-	SUB sp, sp #4
+	SUB sp, sp, #4
 	STR lr, [sp, #0]
+	# start test at e = 3
+	MOV r2, #3
 	
-	MOV r3, r0
-	MOV r4, r1
-	BL pow
-	MOV r1, r2
-	BL modulo
+	loop_e:
+	CMP r2, r0
+	BGE non_valid_e
 	
+	# call gcd(e, phi)
+	MOV r1, r0
+	MOV r0, r2
+	BL gcd
+
+	# gcd(e, phi) == 1?
+	CMP r0, #1
+	BEQ found_valid_e
+
+	# try next odd
+	ADD r2, r2, #2
+	B loop_e
+	
+	non_valid_e:
+	MOV r0, #0
+	B Return_e
+	
+	found_valid_e:
+	MOV r0, r2
+
+	Return_e:
 	LDR lr, [sp, #0]
 	ADD sp, sp, #4
-	MOV pc, lr
+	MOV pc, lr	
+	
 
-# Function: encrypt
-#
-# Parameters:
-# Returns:
-encrypt:
+# Function: cprivexp
+# Calculates private exponent d such that (1 + x * phi) % e == 0 for some x integer 
+# Parameters: e (in r0), phi (in r1)
+# Returns: d (in r0)
+cprivexp:
+	SUB sp, sp #8
+	STR lr, [sp, #0]
+	STR r4, [sp, #4]
+	
+	# x is 1
+	MOV r2, #1
+	
+	find_x:
+	# r3 is x * phi
+	MUL r3, r2, r1
+	# r3 is 1 + x * phi
+	ADD r3, r3, #1
+	
+	MOV r0, r3
+	# r1 is e	
+	MOV r1, r4
+	# r0 is a % b
+	BL modulo
 
-# Function: decrypt
-#
-# Parameters:
-# Returns:
-decrypt:
+	# (1 + x * phi) % e == 0?
+	CMP r0, #0
+	BEQ found_d
+
+	# x++
+	ADD r2, r2, #1
+	B find_x
+
+	found_d:
+	MUL r3, r2, r1
+	ADD r3, r3, #1
+	
+	MOV r0, r3
+	MOV r1, r4
+	# r0 is d
+	BL __aeabi_idiv
+
+	LDR r4, [sp, #4]
+	LDR lr, [sp, #0]
+	ADD sp, sp, #8
+	MOV pc lr
 
