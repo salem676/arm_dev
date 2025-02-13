@@ -1,0 +1,3 @@
+PrintInt: src/PrintInt.s
+	gcc src/PrintInt.s -g -c -o build/PrintInt.o
+	gcc build/PrintInt.o -g -o PrintInt
