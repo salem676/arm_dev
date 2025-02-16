@@ -1,0 +1,3 @@
+PrintStringWTabs: src/PrintStringWTabs.s
+	gcc src/PrintStringWTabs.s -g -c -o build/PrintStringWTabs.o
+	gcc build/PrintStringWTabs.o -g -o PrintStringWTabs

@@ -33,7 +33,8 @@ main:
 	ADD sp, sp, #4
 	MOV pc, lr
 .data
+	#%99[^\n] allows us to read characters until \n
 	prompt1: .asciz "Enter your string: "
-	format1: .asciz "%s"
+	format1: .asciz "%99[^\n]"
 	string1: .space 100
 	output1: .asciz "\"%s\"\n"

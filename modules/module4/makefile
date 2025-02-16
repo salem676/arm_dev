@@ -1,3 +1,3 @@
-PrintFloating: src/PrintFloating.s
-	gcc src/PrintFloating.s -g -c -o build/PrintFloating.o
-	gcc build/PrintFloating.o -g -o PrintFloating
+PrintQuotedString: src/PrintQuotedString.s
+	gcc src/PrintQuotedString.s -g -c -o build/PrintQuotedString.o
+	gcc build/PrintQuotedString.o -g -o PrintQuotedString
