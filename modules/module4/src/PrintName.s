@@ -1,3 +1,9 @@
+#
+# Program Name: PrintName.s
+# Author: Zuriel Garcia
+# Date: 2/13/2025
+# Purpose: this program asks for a name string and then prints it.
+#
 .text
 .global main
 main: 

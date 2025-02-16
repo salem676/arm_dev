@@ -34,5 +34,5 @@ main:
 .data
 	prompt1: .asciz "Enter an float number: "
 	format1: .asciz "%f"
-	num1: .word 0
+	num1: .space 4
 	output1: .asciz "You entered the number %f\n"

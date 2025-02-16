@@ -2,7 +2,7 @@
 # Program Name: PrintAge.s
 # Author: Zuriel Garcia
 # Date: 2/13/2025
-# Purpose: 
+# Purpose: this program asks for an integer value for age and prints it then. 
 #
 .text
 .global main

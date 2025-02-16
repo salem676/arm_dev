@@ -2,7 +2,7 @@
 # Program Name: PrintQuotedString.s
 # Author: Zuriel Garcia
 # Date: 2/13/2025
-# Purpose: 
+# Purpose: this program asks for a string and then prints it back quoted. 
 #
 .text
 .global main
