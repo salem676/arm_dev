@@ -1,3 +1,3 @@
-PrintQuotedString: src/PrintQuotedString.s
-	gcc src/PrintQuotedString.s -g -c -o build/PrintQuotedString.o
-	gcc build/PrintQuotedString.o -g -o PrintQuotedString
+PrintAge: src/PrintAge.s
+	gcc src/PrintAge.s -g -c -o build/PrintAge.o
+	gcc build/PrintAge.o -g -o PrintAge
