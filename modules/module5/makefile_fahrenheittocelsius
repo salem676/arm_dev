@@ -1,0 +1,3 @@
+FahrenheitToCelsius: src/FahrenheitToCelsius.s
+	gcc src/FahrenheitToCelsius.s -g -c -o build/FahrenheitToCelsius.o
+	gcc build/FahrenheitToCelsius.o -g -o FahrenheitToCelsius
