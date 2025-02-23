@@ -1,3 +1,3 @@
-NegativeInteger: src/NegativeInteger.s
-	gcc src/NegativeInteger.s -g -c -o build/NegativeInteger.o
-	gcc build/NegativeInteger.o -g -o NegativeInteger
+SwapTwoRegisters: src/SwapTwoRegisters.s
+	gcc src/SwapTwoRegisters.s -g -c -o build/SwapTwoRegisters.o
+	gcc build/SwapTwoRegisters.o -g -o SwapTwoRegisters
