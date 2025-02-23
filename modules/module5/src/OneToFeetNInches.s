@@ -1,7 +1,7 @@
 #
-# Program Name: TwoToFeet.s
+# Program Name: OneToFeetNInches.s
 # Author: Zuriel Garcia
-# Date: 2/20/2025
+# Date: 2/22/2025
 # Purpose: this program asks for integer inches and prints feet and inches. 
 #
 .text
@@ -28,7 +28,7 @@ main:
 	MOV r0, r4
 	MUL r0, r1, r4
 
-	# read the user integer inches
+	#
 	LDR r1, =totalInches
 	LDR r1, [r1, #0]
 	SUB r1, r1, r0

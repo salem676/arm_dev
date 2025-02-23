@@ -2,7 +2,7 @@
 # Program Name: TwoToInches.s
 # Author: Zuriel Garcia
 # Date: 2/20/2025
-# Purpose: this program asks for integer feet and prints feet and inches. 
+# Purpose: this program asks for integer feet and integer inches, prints inches. 
 #
 .text
 .global main
@@ -21,9 +21,8 @@ main:
 	# read the user integer feet
 	LDR r1, =totalFeet
 	LDR r1, [r1, #0]
-	SUB r1, r1, r0
 
-	MOV r2, r1
+	MOV r4, r1
 
 	# prompt the user to enter an integer inches number	
 	LDR r0, =prompt2
@@ -35,15 +34,14 @@ main:
 	# read the user integer inches
 	LDR r1,  =totalInches
 	LDR r1, [r1, #0]
-	SUB r1, r1, r0
 
 	#
-	MOV r3, #12
-	MUL r4, r2, r3
-	ADD r5, r4, r1
+	MOV r5, #12
+	MUL r6, r4, r5
+	ADD r7, r6, r1
 
 	#
-	MOV r1, r5
+	MOV r1, r7
 	LDR r0, =output	
 	BL printf
 
@@ -53,7 +51,7 @@ main:
 	MOV pc, lr
 
 .data
-	output: .asciz "\nFeet are %d and Inches are %d\n"
+	output: .asciz "\nTotal Inches are %d\n"
 	prompt1: .asciz "Enter total Feet: "
 	prompt2: .asciz "Enter total Inches: "
 	totalFeet: .word 0

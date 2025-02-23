@@ -1,3 +1,3 @@
-TwoToInches: src/TwoToInches.s
-	gcc src/TwoToInches.s -g -c -o build/TwoToInches.o
-	gcc build/TwoToInches.o -g -o TwoToInches
+NegativeInteger: src/NegativeInteger.s
+	gcc src/NegativeInteger.s -g -c -o build/NegativeInteger.o
+	gcc build/NegativeInteger.o -g -o NegativeInteger

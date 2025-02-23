@@ -1,3 +1,0 @@
-MultiplyByTen: src/MultiplyByTen.s
-	gcc src/MultiplyByTen.s -g -c -o build/MultiplyByTen.o
-	gcc build/MultiplyByTen.o -g -o MultiplyByTen

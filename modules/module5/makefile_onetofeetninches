@@ -1,0 +1,3 @@
+OneToFeetNInches: src/OneToFeetNInches.s
+	gcc src/OneToFeetNInches.s -g -c -o build/OneToFeetNInches.o
+	gcc build/OneToFeetNInches.o -g -o OneToFeetNInches

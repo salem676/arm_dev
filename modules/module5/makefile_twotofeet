@@ -1,3 +1,0 @@
-TwoToFeet: src/TwoToFeet.s
-	gcc src/TwoToFeet.s -g -c -o build/TwoToFeet.o
-	gcc build/TwoToFeet.o -g -o TwoToFeet
