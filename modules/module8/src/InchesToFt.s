@@ -20,11 +20,16 @@ main:
 
 	LDR r0, =inches
 	LDR r0, [r0, #0]
-	# next number is 833
-	MOV r1, #13, 12
+	# next number is 833 = 64 * 13 +1
+	MOV r1, #13
+	LSL r1, r1, #6
+	ADD r1, r1, #1
 	MUL r0, r0, r1
-	# next number is 10000
-	MOV r1, #39, 16
+	# next number is 10000 = 16 * 625, and 625 = 39 * 16 +1
+	MOV r1, #39
+	LSL r1, r1, #4
+	ADD r1, r1, #1
+	LSL r1, r1, #4
 	BL __aeabi_idiv
 
 	#

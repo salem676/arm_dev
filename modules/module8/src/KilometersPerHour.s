@@ -7,41 +7,38 @@
 #
 .text
 .global main
+.global Miles2Kilometers
 main:
 	# push the stack record
 	SUB sp, sp, #4
 	STR lr, [sp, #0]
-	
+
 	# prompt the user to enter an integer hours number
 	LDR r0, =prompt1
 	BL printf
 	LDR r0, =formatString
 	LDR r1, =totalHours
 	BL scanf
-
 	# read the user integer hours
 	LDR r1, =totalHours
 	LDR r1, [r1, #0]
-
+	# saves info
 	MOV r4, r1
-
 	# prompt the user to enter an integer miles number	
 	LDR r0, =prompt2
 	BL printf
 	LDR r0, =formatString
 	LDR r1, =totalMiles
 	BL scanf
-
 	# read the user integer miles
 	LDR r1,  =totalMiles
 	LDR r1, [r1, #0]
-
-	#
-	BL Miles2Kilometer
+	MOV r0, r1
+	# calls function to calculate km
+	BL Miles2Kilometers
 	MOV r1, r4
 	BL __aeabi_idiv
-
-	#
+	# prints output
 	MOV r1, r0
 	LDR r0, =output	
 	BL printf

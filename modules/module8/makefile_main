@@ -1,0 +1,3 @@
+main: src/main.s
+	gcc src/main.s -g -c -o build/main.o
+	gcc build/main.o -g -o main
