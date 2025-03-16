@@ -1,0 +1,3 @@
+InchesToFt: src/InchesToFt.s
+	gcc src/InchesToFt.s -g -c -o build/InchesToFt.o
+	gcc build/InchesToFt.o -g -o InchesToFt

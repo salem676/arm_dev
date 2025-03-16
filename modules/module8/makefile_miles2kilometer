@@ -1,0 +1,3 @@
+Miles2Kilometer: src/Miles2Kilometer.s
+	gcc src/Miles2Kilometer.s -g -c -o build/Miles2Kilometer.o
+	gcc build/Miles2Kilometer.o -g -o Miles2Kilometer
