@@ -81,7 +81,7 @@ error:
 	LDR r0, =error_msg
 	BL printf
 exit:
-	# restore stack and retunr
+	# restore stack and return
 	LDR lr, [sp, #0]
 	ADD sp, sp, #4
 	MOV pc, lr

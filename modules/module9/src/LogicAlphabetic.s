@@ -1,8 +1,8 @@
 #
 # Program Name: LogicAlphabetic.s
 # Author: Zuriel Garcia
-# Date: 3/29/2025
-# Purpose: this program asks for an input value and prints message to determine if alphabetic. 
+# Date: 3/31/2025
+# Purpose: this program asks for an input value and prints message to determine if its alphabetic. 
 #
 .text
 .global main
@@ -24,17 +24,20 @@ main:
 	LDR r0, =input1
 	LDR r0, [r0, #0]
 	
-	# check if 'A' <= r0 <= 'Z' (0x41 <= r0 <= 0x5A)
-	CMP r0, #0x41
-	BLT not_alpha
-	CMP r0, #0x5A
-	BLE is_alpha
+	# convert uppercase check, r1 = r0 - 0x41, TST checks if r3 is zero, if zero branchs alpha
+	SUB r1, r0, #0x41
+	MVN r2, #0x1F
+	AND r3, r1, r2
+	TST r3, r3
+	BEQ is_alpha 
 
-	# check if 'a' <= r0 <= 'z' (0x61 <= r0 <= 0x7A)	
-	CMP r0, #0x61
-	BLT not_alpha
-	CMP r0, #0x7A
-	BLE is_alpha
+	# convert lowercase check, r1 = r0 - 0x61
+	SUB r1, r0, #0x61
+	AND r3, r1, r2
+	TST r3, r3
+	BEQ is_alpha
+
+	B not_alpha	
 
 not_alpha:
 	# prints the result is not alphabetic
@@ -45,8 +48,9 @@ is_alpha:
 	# prints the result is alphabetic
 	LDR r0, =output1
 	BL printf
+	B exit
 exit:
-	# restore stack and return
+	#pop the stack record
 	LDR lr, [sp, #0]
 	ADD sp, sp, #4
 	MOV pc, lr

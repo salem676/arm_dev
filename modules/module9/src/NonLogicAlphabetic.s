@@ -1,5 +1,5 @@
 #
-# Program Name: LogicAlphabetic.s
+# Program Name: NonLogicAlphabetic.s
 # Author: Zuriel Garcia
 # Date: 3/29/2025
 # Purpose: this program asks for an input value and prints message to determine if alphabetic. 
@@ -24,32 +24,29 @@ main:
 	LDR r0, =input1
 	LDR r0, [r0, #0]
 	
-	# convert uppercase check (char  'A') & ~0x19 
-	SUB r1, r0, #0x41
-	MVN r2, #0x1F
-	AND r3, r1, r2
-	TST r3, r3
-	BEQ is_alpha 
+	# check if 'A' <= r0 <= 'Z' (0x41 <= r0 <= 0x5A)
+	CMP r0, #0x41
+	BLT not_alpha
+	CMP r0, #0x5A
+	BLE is_alpha
 
-	# convert lowercase check (char - 'a') & ~0x19	
-	SUB r1, r0, #0x61
-	AND r3, r1, r2
-	TST r3, r3
-	BEQ is_alpha
-
-	B not_alpha	
+	# check if 'a' <= r0 <= 'z' (0x61 <= r0 <= 0x7A)	
+	CMP r0, #0x61
+	BLT not_alpha
+	CMP r0, #0x7A
+	BLE is_alpha
 
 not_alpha:
 	# prints the result is not alphabetic
 	LDR r0, =output2
 	BL printf
+	B exit
 is_alpha:
 	# prints the result is alphabetic
 	LDR r0, =output1
 	BL printf
-	B exit
 exit:
-	#pop the stack record
+	# restore stack and return
 	LDR lr, [sp, #0]
 	ADD sp, sp, #4
 	MOV pc, lr

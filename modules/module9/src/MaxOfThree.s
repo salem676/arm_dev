@@ -1,7 +1,7 @@
 #
 # Program Name: MaxOfThree.s
 # Author: Zuriel Garcia
-# Date: 3/29/2025
+# Date: 3/31/2025
 # Purpose: this program prompts for three values and returns the biggest. 
 #
 .text

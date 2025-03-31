@@ -1,4 +1,4 @@
-library: src/library.s
-	gcc src/library.s -g -c -o build/library.o
-	gcc src/MaxOfThree.s build/library.o -g -o MaxOfThree
+NonLogicAlphabetic: src/NonLogicAlphabetic.s
+	gcc src/NonLogicAlphabetic.s -g -c -o build/NonLogicAlphabetic.o
+	gcc build/NonLogicAlphabetic.o -g -o NonLogicAlphabetic
 	
