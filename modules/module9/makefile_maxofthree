@@ -1,0 +1,4 @@
+MaxOfThree: src/MaxOfThree.s
+	gcc src/MaxOfThree.s -g -c -o build/MaxOfThree.o
+	gcc build/MaxOfThree.o -g -o MaxOfThree
+	
