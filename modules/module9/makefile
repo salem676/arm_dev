@@ -1,3 +1,4 @@
-LogicAlphabetic: src/LogicAlphabetic.s
-	gcc src/LogicAlphabetic.s -g -c -o build/LogicAlphabetic.o
-	gcc build/LogicAlphabetic.o -g -o LogicAlphabetic
+GradingProgram: src/GradingProgram.s
+	gcc src/GradingProgram.s -g -c -o build/GradingProgram.o
+	gcc build/GradingProgram.o -g -o GradingProgram
+	

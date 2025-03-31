@@ -6,63 +6,66 @@
 #
 .text
 .global main
+.global max_of_three
 main:
 	# push the stack record
 	SUB sp, sp, #4
 	STR lr, [sp, #0]
 	
-	# prompt name
-	LDR r0, =prompt_name
+	# prompt for first value
+	LDR r0, =prompt_val1
 	BL printf
-
-	# read the user's name
-	LDR r0, =format_str
-	LDR r1, =name
-	BL scanf
-
-	# prompt for average
-	LDR r0, =prompt_avg
-	BL printf
-
-	# read average input
 	LDR r0, =format_int
-	LDR r1, =average
+	LDR r1, =val1
 	BL scanf
-	
-	# load the input average
-	LDR r0, =average
+
+	# prompt for second value
+	LDR r0, = prompt_val2
+	BL printf
+	LDR r0, =format_int
+	LDR r1, =val2
+	BL scanf
+
+	# prompt for third value
+	LDR r0, =prompt_val3
+	BL printf
+	LDR r0, =format_int
+	LDR r1, =val3
+	BL scanf
+
+	# load values and function call
+	LDR r0, =val1
 	LDR r0, [r0, #0]
+	LDR r1, =val2
+	LDR r1, [r1, #0]
+	LDR r2, =val3
+	LDR r2, [r2, #0]
+	BL max_of_three
 
-	# check if avg is < 0
-	CMP r0, #0
-	BLT error
+	# printing
+	LDR r1, =output_msg
+	MOV r1, r0
+	LDR r0, =result_msg
+	BL printf
 
-	# check if avg is > 0
-	CMP r0, #100
-	BGT error
+max_of_three:
+	CMP r0, r1
+	BGE check_r0_r2
+	MOV r0, r1
 	
-	#determine grade
-	CMP r0, #90
-	LDR r0, =grade_A
-	BL printf
+check_r0_r2:
+	CMP r0, r2
+	BGE return_max
+	MOV r0, r2
 
-	CMP r0, #80
-	LDR r0, =grade_B
-	BL printf
+return_max:
+	BX lr
 
-	CMP r0, #70
-	LDR r0, =grade_C
-	BL printf
-
-	LDR r0, =grade_F
-	BL printf
-
-	# pop the stack record	
+exit:
+	# pop the stack register
 	LDR lr, [sp, #0]
 	ADD sp, sp, #4
 	MOV pc, lr
-
-print_grade:
 
 
 .data

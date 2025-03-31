@@ -36,24 +36,25 @@ main:
 	CMP r0, #0x7A
 	BLE is_alpha
 
-	# pop the stack record	
-	LDR lr, [sp, #0]
-	ADD sp, sp, #4
-	MOV pc, lr
-
 not_alpha:
 	# prints the result is not alphabetic
 	LDR r0, =output2
 	BL printf
+	B exit
 is_alpha:
 	# prints the result is alphabetic
 	LDR r0, =output1
 	BL printf
+exit:
+	# restore stack and return
+	LDR lr, [sp, #0]
+	ADD sp, sp, #4
+	MOV pc, lr
 
 
 .data
 	prompt1: .asciz "Enter your input value: "
-	format1: .asciz "%d"
+	format1: .asciz "%c"
 	input1: .word 0
 	output1: .asciz "The result is alphabetic\n"
 	output2: .asciz "The result is not alphabetic\n"

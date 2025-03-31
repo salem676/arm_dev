@@ -43,35 +43,48 @@ main:
 	
 	#determine grade
 	CMP r0, #90
-	LDR r0, =grade_A
-	BL printf
+	BGE assign_A
 
 	CMP r0, #80
-	LDR r0, =grade_B
-	BL printf
-
+	BGE assign_B
+	
 	CMP r0, #70
-	LDR r0, =grade_C
-	BL printf
+	BGE assign_C
 
-	LDR r0, =grade_F
-	BL printf
+	B assign_F
 
-	# pop the stack record	
-	LDR lr, [sp, #0]
-	ADD sp, sp, #4
-	MOV pc, lr
+assign_A:
+	LDR r1, =grade_A
+	B print_grade
+
+assign_B:
+	LDR r1, =grade_B
+	B print_grade
+
+assign_C:
+	LDR r1, =grade_C
+	B print_grade
+
+assign_F:
+	LDR r1, =grade_F
 
 print_grade:
 	# prints name and grade
 	LDR r0, =output_msg
-	LDR r2, =name
+	MOV r2, r1
+	LDR r1, =name
 	BL printf
+	B exit
 
 error:
 	# prints error message
 	LDR r0, =error_msg
 	BL printf
+exit:
+	# restore stack and retunr
+	LDR lr, [sp, #0]
+	ADD sp, sp, #4
+	MOV pc, lr
 
 
 .data
