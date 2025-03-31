@@ -6,7 +6,7 @@
 #
 .text
 .global main
-.global max_of_three
+.extern findMaxOf3
 main:
 	# push the stack record
 	SUB sp, sp, #4
@@ -40,26 +40,14 @@ main:
 	LDR r1, [r1, #0]
 	LDR r2, =val3
 	LDR r2, [r2, #0]
-	BL max_of_three
+	BL findMaxOf3
 
 	# printing
-	LDR r1, =output_msg
 	MOV r1, r0
 	LDR r0, =result_msg
 	BL printf
 
-max_of_three:
-	CMP r0, r1
-	BGE check_r0_r2
-	MOV r0, r1
-	
-check_r0_r2:
-	CMP r0, r2
-	BGE return_max
-	MOV r0, r2
-
-return_max:
-	BX lr
+	B exit
 
 exit:
 	# pop the stack register

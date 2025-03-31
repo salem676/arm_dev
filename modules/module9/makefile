@@ -1,4 +1,4 @@
-GradingProgram: src/GradingProgram.s
-	gcc src/GradingProgram.s -g -c -o build/GradingProgram.o
-	gcc build/GradingProgram.o -g -o GradingProgram
+library: src/library.s
+	gcc src/library.s -g -c -o build/library.o
+	gcc src/MaxOfThree.s build/library.o -g -o MaxOfThree
 	

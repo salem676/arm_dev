@@ -1,4 +1,4 @@
-MaxOfThree: src/MaxOfThree.s
-	gcc src/MaxOfThree.s -g -c -o build/MaxOfThree.o
-	gcc build/MaxOfThree.o -g -o MaxOfThree
+library: src/library.s
+	gcc src/library.s -g -c -o build/library.o
+	gcc src/MaxOfThree.s build/library.o -g -o MaxOfThree
 	
