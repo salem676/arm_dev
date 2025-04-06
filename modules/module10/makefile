@@ -1,4 +1,4 @@
-PrimeChecker: src/PrimeChecker.s
-	gcc src/PrimeChecker.s -g -c -o build/PrimeChecker.o
-	gcc build/PrimeChecker.o -g -o PrimeChecker
+GuessingGame: src/GuessingGame.s
+	gcc src/GuessingGame.s -g -c -o build/GuessingGame.o
+	gcc build/GuessingGame.o -g -o GuessingGame
 	

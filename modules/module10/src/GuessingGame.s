@@ -21,13 +21,19 @@ main:
 	LDR r0, =max_value
 	LDR r4, [r0, #0]
 	MOV r3, #1
+	B guess_loop
 
 guess_loop:
-	ADD r1, r3, r4
-	LSL r2, r1, #1
-	
+	# compute (max_value+min)/2, save in r1
+	ADD r0, r3, r4
+	MOV r1, #2
+	BL __aeabi_idiv
+	MOV r1, r0
+
+	# saving middle value in r7
+	MOV r7, r1	
+
 	LDR r0, =guess_msg
-	MOV r1, r2
 	BL printf
 	
 	LDR r0, =response_prompt
@@ -53,13 +59,15 @@ guess_loop:
 	B guess_loop
 
 too_low:
-	# max = guess + 1
-	ADD r4, r2, #1
+	# compute (mid + 1)/2
+	MOV r3, r7
+	ADD r4, r4, r7
 	B guess_loop
 
 too_high:
-	# max = guess - 1
-	SUB r4, r2, #1
+	# compute (max + mid)/2
+	MOV r3, #1
+	ADD r4, r7, r3
 	B guess_loop
 
 correct:
