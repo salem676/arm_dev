@@ -33,12 +33,13 @@ loop:
 	CMP r1, #3
 	BLT invalid_input
 
-	# initialize r2 = 2 divisor, r3 = 1, is_prime = true
+	# initialize r2 = 2 divisor, r7 = 1, is_prime = true
 	MOV r2, #2
-	MOV r3, #1
+	MOV r7, #1
 	
 	# saving r1
 	MOV r4, r1
+	B check_loop
 
 check_loop:
 	# calculate r5 = r2 * r2, then if r5 > n, done checking
@@ -50,19 +51,25 @@ check_loop:
 	MOV r0, r4
 	MOV r1, r2
 	BL __aeabi_idiv
-	MOV r5, r0
+	
+	# calculate remainder
+	MOV r3, r0
+	MUL r3, r3, r1
+	SUB r2, r4, r3	
 
-	# multiply back to check divisibility
-	MUL r6, r5, r2
-	CMP r6, r4
+	# check remainder (its in r1)
+	CMP r2, #0
 	BEQ not_prime
+
+	# return divisor to r2
+	MOV r2, r1	
 
 	# increment divisor
 	ADD r2, r2, #1
 	B check_loop
 
 done_check:
-	CMP r3, #1
+	CMP r7, #1
 	BEQ is_prime
 	B not_prime
 
@@ -76,7 +83,7 @@ is_prime:
 
 not_prime:
 	# prints not prime message
-	MOV r3, #0
+	MOV r7, #0
 	LDR r0, =not_prime_msg
 	LDR r1, =input1
 	LDR r1, [r1, #0]
