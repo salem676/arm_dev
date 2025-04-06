@@ -18,28 +18,31 @@ main:
 	LDR r1, =max_value
 	BL scanf
 
+	# load max into r4, set min to r5
 	LDR r0, =max_value
 	LDR r4, [r0, #0]
-	
-	# adding min (1) to max_value
-	ADD r4, r4, #1
+	MOV r5, #1	
+
 	B guess_loop
 
 guess_loop:
-	# compute (max_value+min)/2, save in r1
-	MOV r0, r4
+	# compute (min + max) /2 -> r7
+	ADD r0, r5, r4
 	MOV r1, #2
 	BL __aeabi_idiv
-	MOV r1, r0
 
 	# saving middle value in r7
-	MOV r7, r1	
+	MOV r7, r0
+	
+	# loading r1 with r7	
+	MOV r1, r7
 
 	LDR r0, =guess_msg
 	BL printf
 	
 	LDR r0, =response_prompt
 	BL printf
+
 	
 	LDR r0, =format_char
 	LDR r1, =response
@@ -61,19 +64,13 @@ guess_loop:
 	B guess_loop
 
 too_low:
-	# compute mid = mid+1
-	# compute (mid +max)/2
-	ADD r7, r7, #1
-	MOV r3, r7
-	ADD r4, r4, r3
+	# min = guess +1
+	ADD r5, r7, #1
 	B guess_loop
 
 too_high:
-	# compute mid = mid -1
-	# compute (mid + 1)/2
-	SUB r7, r7, #1
-	MOV r3, #1
-	ADD r4, r7, r3
+	# max = guess -1
+	SUB r4, r7, #1
 	B guess_loop
 
 correct:
