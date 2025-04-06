@@ -20,12 +20,14 @@ main:
 
 	LDR r0, =max_value
 	LDR r4, [r0, #0]
-	MOV r3, #1
+	
+	# adding min (1) to max_value
+	ADD r4, r4, #1
 	B guess_loop
 
 guess_loop:
 	# compute (max_value+min)/2, save in r1
-	ADD r0, r3, r4
+	MOV r0, r4
 	MOV r1, #2
 	BL __aeabi_idiv
 	MOV r1, r0
@@ -59,13 +61,17 @@ guess_loop:
 	B guess_loop
 
 too_low:
-	# compute (mid + 1)/2
+	# compute mid = mid+1
+	# compute (mid +max)/2
+	ADD r7, r7, #1
 	MOV r3, r7
-	ADD r4, r4, r7
+	ADD r4, r4, r3
 	B guess_loop
 
 too_high:
-	# compute (max + mid)/2
+	# compute mid = mid -1
+	# compute (mid + 1)/2
+	SUB r7, r7, #1
 	MOV r3, #1
 	ADD r4, r7, r3
 	B guess_loop
@@ -73,7 +79,7 @@ too_high:
 correct:
 	# prints success message
 	LDR r0, =success_msg
-	MOV r1, r2
+	MOV r1, r7
 	BL printf
 	B exit
 exit:
