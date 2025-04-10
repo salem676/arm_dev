@@ -31,9 +31,8 @@ input_loop:
 	B compute
 
 compute:
-	# load  n int r0 for Fibonacci
-	LDR r0, =n
-	LDR r0, [r0, #0]
+	# move r1 to r0
+	MOV r0, r1
 
 	BL Fibonacci
 
