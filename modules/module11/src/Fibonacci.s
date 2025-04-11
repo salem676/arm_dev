@@ -1,107 +1,120 @@
 #
 # Program Name: Fibonacci.s
 # Author: Zuriel Garcia
-# Date: 4/9/2025
-# Purpose: This program calculates the n-th Fibonnaci number, based on user input. ARM assembly implementation.
+# Date: 4/11/2025
+# Purpose: This program calculates nth Fibonacci term for the Fibonacci series. ARM assembly implementation.
 #
-.text
 .global main
 main:
-	# push the stack record
+	# makes room on stack
 	SUB sp, sp, #4
+	# saves link register
 	STR lr, [sp, #0]
 	
-input_loop:
-	# prompt the user for n
+	# load the address of the prompt for fibonacci
 	LDR r0, =prompt
 	BL printf
 
-	# read the number into memory
+	# load format string %d and address of the n number
 	LDR r0, =format
 	LDR r1, =n
 	BL scanf
-
 	
-	# loading n and checking if non-negative
-	LDR r1, =n
+	# loading n and checking if is < 0
 	LDR r1, [r1, #0]
 	CMP r1, #0
 	BLT invalid_input
+
+	# load n int r0 for Fibo
+	LDR r0, =n
+	LDR r0, [r0, #0]
+
+	BL Fibo
+
+	# moves result to r3
+	MOV r2, r1
 	
-	B compute
-
-compute:
-	# move r1 to r0
-	MOV r0, r1
-
-	BL Fibonacci
-
-	# storing result
-	LDR r1, =result
-	STR r0, [r1, #0]
-	
-	# printing result
+	# load output message
 	LDR r0, =result_msg
+	# load m into r1
 	LDR r1, =n
 	LDR r1, [r1, #0]
-	LDR r2, =result
-	LDR r2, [r2, #0]
 	BL printf
 
 	B exit
-
-Fibonacci:	
-
-	CMP r0, #0
-	BEQ fib_zero
-
-	CMP r0, #1
-	BEQ fib_one
-
-	MOV r2, r0
-
-	# n-1
-	SUB r0, r0, #1
-	# recursive call Fibonacci(n-1)
-	BL Fibonacci
+.text
+Fibo:
+	# allocates space for lr and r4
+	SUB sp, sp, #8
+	# saves return address
+	STR lr, [sp, #0]
+	# save r4
+	STR r4, [sp, #4]
+	# copy m into r4
+	MOV r4, r0
 	
-	MOV r3, r0
-
-	# n-2
-	SUB r0, r2, #2
-	# recursive call Fibonacci(n-2)
-	BL Fibonacci
-
-	ADD r0, r0, r3
-	BX lr
-
-fib_zero:
-	# base case zero
-	MOV r0, #0
-	BX lr
-
-fib_one:
-	# base case one
-	MOV r0, #1
-	BX lr
+	CMP r4, #0
+	# if n != 0, go to Else1
+	BNE Else1
+		# base case return value 0
+		MOV r1, #0
+		# call Return
+		B Return
+	Else1:
+		CMP r4, #1
+		# if n != 1, go to Else2
+		BNE Else2
+			# base case return value 1
+			MOV r1, #1
+			# call Return
+			B Return
+		
+	Else2:
+		# prepare argument n - 1
+		SUB r1, r4, #1
+		# recursive call Fibo(n - 1)
+		BL Fibo
+		# add Fibo(n - 1) (in r4) to result
+		ADD r1, r4, r1
+		# prepare argument n - 2
+		SUB r1, r4, #2
+		# recursive call Fibo(n - 2)
+		BL Fibo
+		# add Fibo(n - 2) (in r4) to result
+		ADD r1, r4, r1
+		# call Return
+		B Return
+	Endif:
+	
+	# pop the stack
+	Return:
+	# restore return address
+	LDR lr, [sp, #0]
+	# restore r4
+	LDR r4, [sp, #4]
+	# restore stack
+	ADD sp, sp, #8
+	# return to caller
+	MOV pc, lr
+	
 
 invalid_input:
 	# prints error message
 	LDR r0, =error_msg
 	BL printf
-	B input_loop
-
+	B exit
 exit:
-	# restore stack and return
+	# load link register
 	LDR lr, [sp, #0]
+	# restore stack space
 	ADD sp, sp, #4
 	MOV pc, lr
 
 
 .data
-	prompt: .asciz "Enter the position (n) of the Fibonacci sequence: \n"
+	prompt: .asciz "Enter the number (n) for the Fibonacci term: \n"
 	format: .asciz "%d"
 	n: .word 0
 	result: .word 0
-	result_msg: .asciz "Fibonnaci number at position %d is: %d\n"
-	error_msg: .asciz "Please enter a non-negative number!\n"
+	result_msg: .asciz "Fibonacci term for %d is: %d\n"
+	error_msg: .asciz "Error! Number for Fibonacci term must be a non-negative integer.\n"

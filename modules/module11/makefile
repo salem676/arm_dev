@@ -1,4 +1,4 @@
-RecursiveMult: src/RecursiveMult.s
-	gcc src/RecursiveMult.s -g -c -o build/RecursiveMult.o
-	gcc build/RecursiveMult.o -g -o RecursiveMult
+Fibonacci: src/Fibonacci.s
+	gcc src/Fibonacci.s -g -c -o build/Fibonacci.o
+	gcc build/Fibonacci.o -g -o Fibonacci
 	
