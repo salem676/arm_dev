@@ -1,4 +1,4 @@
-Summation: src/Summation.s
-	gcc src/Summation.s -g -c -o build/Summation.o
-	gcc build/Summation.o -g -o Summation
+RecursiveMult: src/RecursiveMult.s
+	gcc src/RecursiveMult.s -g -c -o build/RecursiveMult.o
+	gcc build/RecursiveMult.o -g -o RecursiveMult
 	

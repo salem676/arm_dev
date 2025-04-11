@@ -5,27 +5,27 @@
 # Purpose: This program accepts two numbers, the first m multiplier, the second, the successive number of iterations n. Calculates multiplication
 # using successive addition iterations. ARM assembly implementation.
 #
-.text
 .global main
 main:
-	# push the stack record
+	# makes room on stack
 	SUB sp, sp, #4
+	# saves link register
 	STR lr, [sp, #0]
 	
-	# prompt the user for multiplier m
+	# load the address of the prompt for multiplier
 	LDR r0, =prompt_m
 	BL printf
 
-	# read the multiplier into memory
+	# load format string %d and address of the multiplier variable
 	LDR r0, =format
 	LDR r1, =m
 	BL scanf
 
-	# prompt the user for number of additions
+	# load address of the prompt for number of additions
 	LDR r0, =prompt_n
 	BL printf
 
-	# read number of additions in memory
+	# load format string %d and address of number of additions variable
 	LDR r0, =format
 	LDR r1, =n
 	BL scanf
@@ -44,46 +44,73 @@ main:
 
 	BL mult
 
-	# storing result
-	LDR r2, =result
-	STR r0, [r2, #0]
+	# moves result to r2
+	MOV r2, r1
 	
-	# printing result
+	# load output message
 	LDR r0, =result_msg
+	# load m into r1
 	LDR r1, =m
 	LDR r1, [r1, #0]
-	LDR r2, =n
-	LDR r2, [r2, #0]
-	LDR r3, =result
-	LDR r3, [r3, #0]
 	BL printf
 
 	B exit
-
+.text
 mult:
-	CMP r1, #1
-	BEQ mult_base
+	# allocates space for lr and r4
+	SUB sp, sp, #12
+	# saves return address
+	STR lr, [sp, #0]
+	# save r4
+	STR r4, [sp, #4]
+	# copy m into r4
+	MOV r4, r0
+	# save r5
+	STR r5, [sp, #8]
+	# copy n into r5
+	MOV r5, r1
 	
-	MOV r2, r0
-	SUB r1, r1, #1
-	# recursive call mult(m, n - 1)
-	BL mult
-	ADD r0, r0, r2
-	BX lr
-
-mult_base:
-	# base case for mult
-	MOV r0, r0
-	BX lr
+	CMP r5, #0
+	# if n != 0, go to Else
+	BNE Else
+		# base case return value
+		MOV r1, #0
+		# call Return
+		B Return
+	Else:
+		# prepare argument n - 1
+		SUB r1, r5, #1
+		# recursive call mult(m, n - 1)
+		BL mult
+		# add current n (in r5) to result
+		ADD r1, r5, r1
+		# call Return
+		B Return
+	Endif:
+	
+	# pop the stack
+	Return:
+	# restore return address
+	LDR lr, [sp, #0]
+	# restore r5
+	LDR r5, [sp, #8]
+	# restore r4
+	LDR r4, [sp, #4]
+	# restore stack
+	ADD sp, sp, #8
+	# return to caller
+	MOV pc, lr
+	
 
 invalid_input:
 	# prints error message
 	LDR r0, =error_msg
 	BL printf
-
+	B exit
 exit:
-	# restore stack and return
+	# load link register
 	LDR lr, [sp, #0]
+	# restore stack space
 	ADD sp, sp, #4
 	MOV pc, lr
 
