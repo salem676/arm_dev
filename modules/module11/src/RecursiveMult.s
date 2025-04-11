@@ -44,14 +44,16 @@ main:
 
 	BL mult
 
-	# moves result to r2
-	MOV r2, r1
+	# moves result to r3
+	MOV r3, r1
 	
 	# load output message
 	LDR r0, =result_msg
 	# load m into r1
 	LDR r1, =m
 	LDR r1, [r1, #0]
+	LDR r2, =n
+	LDR r2, [r2, #0]
 	BL printf
 
 	B exit
@@ -82,8 +84,8 @@ mult:
 		SUB r1, r5, #1
 		# recursive call mult(m, n - 1)
 		BL mult
-		# add current n (in r5) to result
-		ADD r1, r5, r1
+		# add m (in r4) to result
+		ADD r1, r4, r1
 		# call Return
 		B Return
 	Endif:
@@ -97,7 +99,7 @@ mult:
 	# restore r4
 	LDR r4, [sp, #4]
 	# restore stack
-	ADD sp, sp, #8
+	ADD sp, sp, #12
 	# return to caller
 	MOV pc, lr
 	
