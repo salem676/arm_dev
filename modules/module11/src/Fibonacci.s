@@ -31,7 +31,7 @@ main:
 
 	BL Fibo
 
-	# moves result to r3
+	# moves result to r2
 	MOV r2, r1
 	
 	# load output message
@@ -74,14 +74,16 @@ Fibo:
 		SUB r1, r4, #1
 		# recursive call Fibo(n - 1)
 		BL Fibo
-		# add Fibo(n - 1) (in r4) to result
-		ADD r1, r4, r1
+		# save result to r2
+		MOV r2, r1
 		# prepare argument n - 2
 		SUB r1, r4, #2
 		# recursive call Fibo(n - 2)
 		BL Fibo
-		# add Fibo(n - 2) (in r4) to result
-		ADD r1, r4, r1
+		# save result to r1
+		MOV r3, r1
+		# add r2, r3
+		ADD r1, r2, r3
 		# call Return
 		B Return
 	Endif:
