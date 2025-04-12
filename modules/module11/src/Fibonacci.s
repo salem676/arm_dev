@@ -26,33 +26,32 @@ main:
 	CMP r0, #0
 	BLT invalid_input
 
-	# load n int r0 for Fibo
-	LDR r0, =n
-	LDR r0, [r0, #0]
-
 	BL Fibo
 
-	# moves result to r2
-	MOV r2, r1
+	# moves result to r4
+	MOV r3, r0
 	
 	# load output message
 	LDR r0, =result_msg
 	# load n into r1
 	LDR r1, =n
 	LDR r1, [r1, #0]
+	MOV r2, r3
 	BL printf
 
 	B exit
 .text
 Fibo:
 	# allocates space for lr, r4 and r5
-	SUB sp, sp, #8
+	SUB sp, sp, #12
 	# saves return address
 	STR lr, [sp, #0]
 	# save r4
 	STR r4, [sp, #4]
-	# copy n into r4
+	# copy  into r4
 	MOV r4, r0
+	# save r5
+	STR r5, [sp, #8]
 	
 	CMP r4, #0
 	# if n != 0, go to Else1
@@ -72,31 +71,31 @@ Fibo:
 		
 	Else2:
 		# prepare argument n - 1
-		SUB r1, r4, #1
+		SUB r0, r4, #1
 		# recursive call Fibo(n - 1)
 		BL Fibo
-		# save result to r2
-		MOV r2, r1
+		# save result to r5
+		MOV r5, r0
 		# prepare argument n - 2
-		SUB r1, r4, #2
+		SUB r0, r4, #2
 		# recursive call Fibo(n - 2)
 		BL Fibo
-		# save result to r1
-		MOV r3, r1
-		# add r2, r3
-		ADD r1, r2, r3
+		# add r0, r5
+		ADD r0, r0, r5
 		# call Return
 		B Return
 	Endif:
 	
-	# pop the stack
+	
 	Return:
 	# restore return address
 	LDR lr, [sp, #0]
+	# restore r5
+	LDR r5, [sp, #8]
 	# restore r4
 	LDR r4, [sp, #4]
 	# restore stack
-	ADD sp, sp, #8
+	ADD sp, sp, #12
 	# return to caller
 	MOV pc, lr
 	
