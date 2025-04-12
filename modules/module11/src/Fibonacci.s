@@ -21,8 +21,9 @@ main:
 	BL scanf
 	
 	# loading n and checking if is < 0
-	LDR r1, [r1, #0]
-	CMP r1, #0
+	LDR r0, =n
+	LDR r0, [r0, #0] 
+	CMP r0, #0
 	BLT invalid_input
 
 	# load n int r0 for Fibo
@@ -36,7 +37,7 @@ main:
 	
 	# load output message
 	LDR r0, =result_msg
-	# load m into r1
+	# load n into r1
 	LDR r1, =n
 	LDR r1, [r1, #0]
 	BL printf
@@ -44,13 +45,13 @@ main:
 	B exit
 .text
 Fibo:
-	# allocates space for lr and r4
+	# allocates space for lr, r4 and r5
 	SUB sp, sp, #8
 	# saves return address
 	STR lr, [sp, #0]
 	# save r4
 	STR r4, [sp, #4]
-	# copy m into r4
+	# copy n into r4
 	MOV r4, r0
 	
 	CMP r4, #0
