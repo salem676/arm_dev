@@ -110,7 +110,18 @@ modulo:
 	LDR lr, [sp, #0]
 	ADD sp, sp, #4
 	MOV pc, lr
-	
+
+# Function: mod_pow
+# Caclulates
+# Parameters:
+# Returns:
+mod_pow:
+
+# Fuction: mod_inverse
+# Calculates
+# Parameters:
+# Returns:
+mod_inverse:
 
 # Function: cpubexp
 # Converts  hours and miles to kilometers per hour
@@ -118,20 +129,29 @@ modulo:
 # Returns: prints kilometers per hour
 cpubexp:
 
-	SUB sp, sp, #4
-	STR lr, [sp, #0]	
-
-	BL Miles2Kilometers
-
-	LDR lr, [sp, #0]
-	ADD sp, sp, #4
-	MOV pc, lr
-
 # Function: cprivexp
 # 
 # Parameters:
 # Returns:
 cprivexp:
+
+# Function: cexp
+#
+# Parameters:
+# Returns:
+cexp:
+	SUB sp, sp #4
+	STR lr, [sp, #0]
+	
+	MOV r3, r0
+	MOV r4, r1
+	BL pow
+	MOV r1, r2
+	BL modulo
+	
+	LDR lr, [sp, #0]
+	ADD sp, sp, #4
+	MOV pc, lr
 
 # Function: encrypt
 #
