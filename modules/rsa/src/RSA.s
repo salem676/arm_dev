@@ -1,422 +1,330 @@
-.data
-    @ Menu and Messages
-    title:      .asciz "\n=== RSA Encryption Program ===\n"
-    menu:       .asciz "\n1. Generate Keys\n2. Encrypt Message\n3. Decrypt Message\n4. Exit\nChoice: "
-    prompt_p:   .asciz "Enter prime p (<50): "
-    prompt_q:   .asciz "Enter prime q (<50): "
-    prompt_msg: .asciz "Enter message to encrypt: "
-    error_msg:  .asciz "\nError: Please enter a valid prime number\n"
-    
-    @ Output formats
-    key_fmt:    .asciz "\nPublic Key (e,n): (%d,%d)\nPrivate Key (d,n): (%d,%d)\n"
-    ascii_fmt:  .asciz "ASCII: %d\n"
-    enc_fmt:    .asciz "Encrypted: %d\n"
-    dec_fmt:    .asciz "Decrypted: %c"
-    newline:    .asciz "\n"
-    
-    @ File names and modes
-    enc_file:   .asciz "encrypted.txt"
-    dec_file:   .asciz "decrypted.txt"
-    write_mode: .asciz "w"
-    read_mode:  .asciz "r"
-    
-    @ Input formats
-    scanf_fmt:  .asciz "%d"
-    char_fmt:   .asciz "%c"
-    str_fmt:    .asciz "%s"
-    
-    @ Buffers
-    .align 4
-    message:    .space 1024
-    buffer:     .space 1024
-    
-    @ Variables to store keys
-    .align 4
-    public_key: .word 0   @ e
-    private_key:.word 0   @ d
-    modulus:    .word 0   @ n
-.text
 .global main
-.extern printf
 .extern scanf
-.extern fopen
-.extern fclose
-.extern fprintf
-.extern fscanf
-.extern getchar
-main:
-    PUSH {r4-r11, lr}
-menu_loop:
-    LDR r0, =title
-    BL printf
-    LDR r0, =menu
-    BL printf
-    
-    SUB sp, sp, #4
-    LDR r0, =scanf_fmt
-    MOV r1, sp
-    BL scanf
-    LDR r4, [sp]
-    ADD sp, sp, #4
-    
-    @ Clear input buffer
-    BL getchar
-    
-    CMP r4, #1
-    BEQ generate_keys
-    CMP r4, #2
-    BEQ encrypt_message
-    CMP r4, #3
-    BEQ decrypt_message
-    CMP r4, #4
-    BEQ exit_program
-    B menu_loop
-generate_keys:
-    @ Get prime p
-    LDR r0, =prompt_p
-    BL printf
-    
-    SUB sp, sp, #4
-    LDR r0, =scanf_fmt
-    MOV r1, sp
-    BL scanf
-    LDR r4, [sp]    @ r4 = p
-    ADD sp, sp, #4
-    
-    MOV r0, r4
-    BL is_prime
-    CMP r0, #0
-    BEQ prime_error
-    
-    @ Get prime q
-    LDR r0, =prompt_q
-    BL printf
-    
-    SUB sp, sp, #4
-    LDR r0, =scanf_fmt
-    MOV r1, sp
-    BL scanf
-    LDR r5, [sp]    @ r5 = q
-    ADD sp, sp, #4
-    
-    MOV r0, r5
-    BL is_prime
-    CMP r0, #0
-    BEQ prime_error
-    
-    @ Calculate n = p * q
-    MOV r0, r4
-    MOV r1, r5
-    MUL r6, r0, r1   @ r6 = n
-    
-    @ Calculate totient = (p-1) * (q-1)
-    SUB r0, r4, #1
-    SUB r1, r5, #1
-    MUL r7, r0, r1   @ r7 = totient
-    
-    @ Find public key e
-    MOV r0, r7
-    BL find_e
-    MOV r8, r0       @ r8 = e
-    
-    @ Calculate private key d
-    MOV r0, r8
-    MOV r1, r7
-    BL mod_inverse
-    MOV r9, r0       @ r9 = d
-    
-    @ Store keys
-    LDR r0, =public_key
-    STR r8, [r0]
-    LDR r0, =private_key
-    STR r9, [r0]
-    LDR r0, =modulus
-    STR r6, [r0]
-    
-    @ Display keys
-    LDR r0, =key_fmt
-    MOV r1, r8
-    MOV r2, r6
-    MOV r3, r9
-    PUSH {r6}
-    BL printf
-    ADD sp, sp, #4
-    
-    B menu_loop
-encrypt_message:
-    @ Get message
-    LDR r0, =prompt_msg
-    BL printf
-    
-    @ Clear input buffer
-    BL getchar
-    
-    @ Read message
-    LDR r0, =message
-    MOV r1, #1024
-    BL gets
-    
-    @ Open output file
-    LDR r0, =enc_file
-    LDR r1, =write_mode
-    BL fopen
-    MOV r4, r0       @ r4 = file handle
-    
-    @ Load keys
-    LDR r5, =public_key
-    LDR r5, [r5]     @ r5 = e
-    LDR r6, =modulus
-    LDR r6, [r6]     @ r6 = n
-    
-    @ Process message
-    LDR r7, =message
-encrypt_loop:
-    LDRB r0, [r7], #1
-    CMP r0, #0
-    BEQ encrypt_done
-    
-    @ Show ASCII value
-    PUSH {r0-r7}
-    LDR r0, =ascii_fmt
-    MOV r1, r0
-    BL printf
-    POP {r0-r7}
-    
-    @ Encrypt character
-    PUSH {r4-r7}
-    MOV r1, r5       @ e
-    MOV r2, r6       @ n
-    BL mod_pow
-    MOV r8, r0       @ Save encrypted value
-    POP {r4-r7}
-    
-    @ Write to file
-    MOV r0, r4
-    LDR r1, =scanf_fmt
-    MOV r2, r8
-    BL fprintf
-    
-    @ Show encrypted value
-    PUSH {r0-r7}
-    LDR r0, =enc_fmt
-    MOV r1, r8
-    BL printf
-    POP {r0-r7}
-    
-    B encrypt_loop
-encrypt_done:
-    MOV r0, r4
-    BL fclose
-    B menu_loop
-decrypt_message:
-    @ Open input file
-    LDR r0, =enc_file
-    LDR r1, =read_mode
-    BL fopen
-    MOV r4, r0       @ r4 = file handle
-    
-    @ Open output file
-    LDR r0, =dec_file
-    LDR r1, =write_mode
-    BL fopen
-    MOV r5, r0       @ r5 = file handle
-    
-    @ Load keys
-    LDR r6, =private_key
-    LDR r6, [r6]     @ r6 = d
-    LDR r7, =modulus
-    LDR r7, [r7]     @ r7 = n
-    
-decrypt_loop:
-    @ Read encrypted value
-    SUB sp, sp, #4
-    MOV r0, r4
-    LDR r1, =scanf_fmt
-    MOV r2, sp
-    BL fscanf
-    CMP r0, #1
-    BNE decrypt_done
-    
-    LDR r0, [sp]
-    ADD sp, sp, #4
-    
-    @ Decrypt value
-    PUSH {r4-r7}
-    MOV r1, r6       @ d
-    MOV r2, r7       @ n
-    BL mod_pow
-    MOV r8, r0       @ Save decrypted value
-    POP {r4-r7}
-    
-    @ Write to file
-    MOV r0, r5
-    LDR r1, =char_fmt
-    MOV r2, r8
-    BL fprintf
-    
-    @ Show decrypted character
-    LDR r0, =dec_fmt
-    MOV r1, r8
-    BL printf
-    
-    B decrypt_loop
-decrypt_done:
-    MOV r0, r4
-    BL fclose
-    MOV r0, r5
-    BL fclose
-    LDR r0, =newline
-    BL printf
-    B menu_loop
-@ Helper Functions
-is_prime:
-    PUSH {r4-r6, lr}
-    MOV r4, r0
-    CMP r4, #2
-    BLT not_prime
-    CMP r4, #2
-    BEQ is_prime_true
-    
-    MOV r5, #2
-prime_loop:
-    CMP r5, r4
-    BEQ is_prime_true
-    
-    UDIV r0, r4, r5
-    MOV r6, r5
-    MUL r1, r0, r6   @ Fixed: Use different registers
-    CMP r1, r4
-    BEQ not_prime
-    
-    ADD r5, r5, #1
-    B prime_loop
-    
+.extern printf
+.extern __aeabi_idiv
+.extern __aeabi_idivmod
+.data
+        prompte: .asciz "\nEnter your public key exponent e: "
+        format: .asciz "%d"
+        error_msg: .asciz "\nSelected e does not meet criteria: "
+        e: .word 0
+        debug_msg: .asciz "GCD result: %d\n"
+        debug_msg2: .asciz "Before modulo: a=%d, b=%d\n"
+        output_msg: .asciz "Valid e: %d\n"
+.text
+
+.global main
+.extern scanf
+.extern printf
+.extern __aeabi_idiv
+.extern __aeabi_idivmod
+ 
+.data
+number_format: .asciz " %d"
+ 
+@ Part 2  
+@ 2a - Displays a prompts to input two positive integers p and q with a limit of 50 for simplicity 
+@ 2b - Checks if both integers are prime
+@ 2c - Calculates the modulus n for the public and private keys: n = p * q
+@ 2d - Calculate the totient: Φ(n) = (p – 1) (q – 1)
+ 
+ 
+@@ Inputs, Outputs, and Variables
+p_prompt: .asciz "Please Enter a Prime Number less than 50 For Variable P, 0 to end the Program: "
+q_prompt: .asciz "For Variable Q, Please Enter a Prime Number less than 50, 0 to end the Program: "
+ 
+prime_invalid: .asciz "Selected Number is not valid. Try Again. \n"
+output_zero: .asciz "Program End." 
+output_both_prime: .asciz "The number %d and %d are prime. \n"
+ 
+output_modulo: .asciz "The modulo (n) is: %d\n"
+output_totient: .asciz "The totient (phi(n)) is: %d\n"
+ 
+input_number: .word 0
+p_value: .word 0
+q_value: .word 0
+modulo_value: .word 0
+totient_value: .word 0
+ 
+.text
+.align 2
+ 
+create_values:
+ 
+    SUB sp, sp, #24      
+    STR lr, [sp, #20]
+    STR r4, [sp, #16]
+    STR r5, [sp, #12]
+    STR r6, [sp, #8]
+    STR r7, [sp, #4]
+    STR r8, [sp, #0]
+    mov r6, #0
+ 
+@ prompts and scans for p value from user, loads into r2 to calc as the prime check value
+p_prompt_loop:
+ 
+    ldr r0, =p_prompt
+    bl printf
+ 
+    ldr r0, =number_format
+    ldr r1, =input_number 
+    bl scanf
+    ldr r2, =input_number 
+    ldr r2, [r2]
+ 
+@ User Exit Selection if Zero 
+    cmp r2, #0
+    beq is_zero
+ 
+@ Pre-Prime Check, remove negatives and 1, 2 is known prime, no need to calc
+    cmp r2, #2
+    blt not_prime
+    beq valid_prime
+    cmp r2, #3
+    beq valid_prime
+@ removes check value if even since values > 2 cannot be prime 
+    tst r2, #1
+    beq not_prime
+@ ------------------------------------	
+  @ The prime check is done through a looped mod division from 3 to the square root of the target value as a ceiling for the loop 
+  @ as any non-prime number can only be a factored into two integers that are both less than the squate root of the number  
+  @ because we are only working with integers, the calculated square root is rounded down, not exact 
+@ -----------------------------------
+
+@ initial values start at 3 as divisor r4, move prime check value r2 into r0 
+    mov r4, #3
+    mov r0, r2
+ 
+@ Calc to calculate the square root, after  
+    bl sqrt_calc
+    mov r5, r0
+ 
+ 
+@ compare value, exist r4 is greater than r5 
+prime_check_loop:
+    cmp r4, r5
+    bgt valid_prime
+
+@mod division to check if prime, value is not prime is there is a mod of 0   
+    mov r0, r2
+    mov r1, r4
+    bl __aeabi_idivmod
+    cmp r1, #0
+    beq not_prime
+@ add 2 to the odd divisor r4 to check next odd value 
+    add r4, r4, #2
+    b prime_check_loop
+ 
+ 
+@ Square Root Calculation is done through subtraction of successive odd number 
+sqrt_calc:
+    SUB sp, sp, #12      
+    STR lr, [sp, #8]
+    STR r4, [sp, #4]
+    STR r5, [sp, #0]
+@ r1 is the target value, r2 is the sucessive odd numbers starting at 1  
+    mov r1, r0
+    mov r0, #0
+    mov r2, #1
+ 
+@ The target number is subtracted by 1, 3, 5, ... n+2 until r0 is less than zero   
+sqrt_loop:
+    subs r1, r1, r2
+    addlt r0, r0, #1
+    blt sqrt_done
+    add r2, r2, #2
+    add r0, r0, #1
+    b sqrt_loop
+ 
+sqrt_done:
+    LDR lr, [sp, #8]
+    LDR r4, [sp, #4]
+    LDR r5, [sp, #0]
+    ADD sp, sp, #12
+    MOV pc, lr
+ 
+@ if we've correctly found q, this skips to the results 
+valid_prime:
+    cmp r6, #1
+    beq q_valid_prime
+ 
+@ stores p in r7 for later, moves to q prompt, it set r6 to 1 so loop for p value isn't allowed 
+    mov r7, r2
+    mov r6, #1
+    b q_prompt_loop
+ 
+ 
+@ Q loop starts here, prompting for q and running through the loop again  
+q_prompt_loop:
+    ldr r0, =q_prompt
+    bl printf
+ 
+    ldr r0, =number_format
+    ldr r1, =input_number
+    bl scanf
+ 
+    ldr r2, =input_number 
+    ldr r2, [r2]
+    b valid_number_check
+ 
+ 
+@ these are the output messages
+@ first check is if the value is a number between 2 and 50, zero here for an easy exis 
+valid_number_check:
+    cmp r2, #2
+    blt not_prime
+    cmp r2, #50
+    bgt not_prime
+    cmp r2, #0
+    beq is_zero
+    b prime_check_loop
+ 
 not_prime:
-    MOV r0, #0
-    B prime_done
-is_prime_true:
-    MOV r0, #1
-prime_done:
-    POP {r4-r6, pc}
+    ldr r0, =prime_invalid
+    bl printf
+    cmp r6, #0
+    beq p_prompt_loop
+    b q_prompt_loop
+ 
+is_zero:
+    ldr r0, =output_zero
+    bl printf
+    b end_create_values
+ 
+ 
+@ if prime is correct for both, outputs p and q and exits the create value function 
+q_valid_prime:
+    ldr r0, =p_value    @ Store p
+    str r7, [r0]
+    ldr r0, =q_value    @ Store q
+    str r2, [r0]
+    ldr r0, =output_both_prime
+    mov r1, r7
+    mov r2, r2
+    bl printf
+
+ 
+end_create_values:
+    LDR lr, [sp, #20]
+    LDR r4, [sp, #16]
+    LDR r5, [sp, #12]
+    LDR r6, [sp, #8]
+    LDR r7, [sp, #4]
+    LDR r8, [sp, #0]
+    ADD sp, sp, #24
+    MOV pc, lr
+modulo:
+    SUB sp, sp, #8
+    STR lr, [sp, #4]
+    STR r4, [sp, #0]
+ 
+    ldr r4, =p_value
+    ldr r0, [r4]
+    ldr r4, =q_value
+    ldr r1, [r4]
+ 
+    mul r1, r0, r1
+ 
+    ldr r0, =output_modulo
+    bl printf
+ 
+    ldr r2, =modulo_value
+    str r6, [r2]
+ 
+    LDR lr, [sp, #4]
+    LDR r4, [sp, #0]
+    ADD sp, sp, #8
+    bx lr
+ 
+totient:
+    SUB sp, sp, #12 
+    STR lr, [sp, #8]
+    STR r4, [sp, #4]
+    STR r5, [sp, #0]
+    ldr r4, =p_value
+    ldr r0, [r4]
+    sub r0, r0, #1
+    ldr r4, =q_value
+    ldr r1, [r4]
+    sub r1, r1, #1
+    mul r1, r0, r1
+    ldr r0, =totient_value
+    str r5, [r0]
+    ldr r0, =output_totient
+    bl printf
+    LDR lr, [sp, #8]
+    LDR r4, [sp, #4]
+    LDR r5, [sp, #0]
+    ADD sp, sp, #12
+    MOV pc, lr
+
 find_e:
-    PUSH {r4-r5, lr}
-    MOV r4, r0       @ totient
-    MOV r5, #3       @ e starts at 3
+    SUB sp, sp, #4
+    STR lr, [sp]
 find_e_loop:
-    MOV r0, r5
-    MOV r1, r4
-    BL gcd
-    CMP r0, #1
-    BEQ find_e_done
-    ADD r5, r5, #2
-    B find_e_loop
-find_e_done:
-    MOV r0, r5
-    POP {r4-r5, pc}
+    MOV r5, #84
+    ldr r0, =prompte
+    bl printf
+    ldr r0, =format
+    ldr r1, =e
+    bl scanf
+    ldr r1, =e
+    ldr r1, [r1]
+    mov r4, r1
+    cmp r1, #1
+    ble invalid_e
+    cmp r1, r5
+    bge invalid_e
+    mov r2, r5
+    bl gcd
+    cmp r1, #1
+    bne invalid_e
+    b find_e_success
+invalid_e:
+    ldr r0, =error_msg
+    bl printf
+    b find_e_loop
+find_e_success:
+    mov r1, r4
+    ldr r0, =output_msg
+    bl printf
+    ldr lr, [sp]
+    add sp, sp, #4
+    mov pc, lr
+main:
+        SUB sp, sp, #4
+        STR lr, [sp, #0]
+		bl create_values
+		bl modulo
+		bl totient	
+
+		bl find_e
+        LDR lr, [sp, #0]
+        ADD sp, sp, #4
+        MOV pc, lr
+#END MAIN
 gcd:
-    PUSH {r4-r6, lr}
+        SUB sp, sp, #4
+        STR lr, [sp, #0]
 gcd_loop:
-    CMP r1, #0
-    BEQ gcd_done
-    MOV r4, r1
-    UDIV r2, r0, r1
-    MOV r5, r1
-    MUL r6, r2, r5   @ Fixed: Use different registers
-    SUB r1, r0, r6   @ r1 = r0 % r1
-    MOV r0, r4
-    B gcd_loop
-gcd_done:
-    POP {r4-r6, pc}
-mod_inverse:
-    PUSH {r4-r9, lr}
-    MOV r4, r0       @ a
-    MOV r5, r1       @ m
-    MOV r6, #1       @ x1
-    MOV r7, #0       @ x2
-    MOV r8, r1       @ Original m
-mod_inv_loop:
-    CMP r1, #0
-    BLE mod_inv_done
-    
-    UDIV r2, r4, r1      @ r2 = quotient
-    MOV r9, r1           @ Save r1 temporarily
-    MUL r3, r2, r9       @ r3 = quotient * divisor
-    SUB r0, r4, r3       @ r0 = remainder
-    
-    MOV r4, r1           @ r4 = divisor
-    MOV r1, r0           @ r1 = remainder
-    
-    MOV r0, r6           @ Save x1
-    MOV r3, r2           @ Save quotient
-    MUL r9, r3, r7       @ r9 = quotient * x2
-    SUB r6, r0, r9       @ x1 = x1 - quotient * x2
-    MOV r0, r7           @ x2 becomes old x1
-    MOV r7, r6           @ Update x2
-    MOV r6, r0           @ Update x1
-    
-    B mod_inv_loop
-    
-mod_inv_done:
-    CMP r6, #0
-    ADDLT r6, r6, r8
-    MOV r0, r6
-    POP {r4-r9, pc}
-mod_pow:
-    PUSH {r4-r9, lr}
-    MOV r4, #1       @ result
-    MOV r5, r0       @ base
-    MOV r6, r1       @ exponent
-    MOV r7, r2       @ modulus
-mod_pow_loop:
-    CMP r6, #0
-    BEQ mod_pow_done
-    
-    TST r6, #1
-    BEQ mod_pow_skip
-    
-    MOV r0, r4
-    MOV r8, r5
-    MUL r9, r0, r8   @ Fixed: Use different registers
-    UDIV r0, r9, r7
-    MUL r8, r0, r7
-    SUB r4, r9, r8   @ r4 = (r4 * r5) % r7
-    
-mod_pow_skip:
-    MOV r0, r5
-    MOV r8, r5
-    MUL r9, r0, r8   @ Fixed: Use different registers
-    UDIV r0, r9, r7
-    MUL r8, r0, r7
-    SUB r5, r9, r8   @ r5 = (r5 * r5) % r7
-    
-    LSR r6, r6, #1
-    B mod_pow_loop
-    
-mod_pow_done:
-    MOV r0, r4
-    POP {r4-r9, pc}
-prime_error:
-    LDR r0, =error_msg
-    BL printf
-    B generate_keys
-exit_program:
-    MOV r0, #0
-    POP {r4-r11, pc}
-.global gets
-gets:
-    PUSH {r4, r5, lr}
-    MOV r4, r0       @ Buffer address
-    MOV r5, r1       @ Buffer size
-gets_loop:
-    BL getchar
-    CMP r0, #10      @ Check for newline
-    BEQ gets_done
-    CMP r0, #0       @ Check for EOF
-    BEQ gets_done
-    STRB r0, [r4], #1
-    SUBS r5, r5, #1
-    BNE gets_loop
-gets_done:
-    MOV r0, #0
-    STRB r0, [r4]    @ Null terminate
-    POP {r4, r5, pc}
+        # while (b != 0)
+        CMP r2, #0
+        BEQ gcd_end
+        MOV r0, r1
+        MOV r1, r2
+        BL modulo2
+        MOV r1, r2
+        MOV r2, r0
+        B gcd_loop
+gcd_end:
+        LDR lr, [sp, #0]
+        ADD sp, sp, #4
+        MOV pc, lr
+modulo2:
+        SUB sp, sp, #4
+        STR lr, [sp, #0]
+        BL __aeabi_idivmod
+        MOV r0, r1
+        LDR lr, [sp, #0]
+        ADD sp, sp, #4
+        MOV pc, lr
